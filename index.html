@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <title>クイズ管理画面</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 20px;
+        background: #f0f4f8;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 10px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      /* 保存ボタン */
+      .btn-save {
+        background: #4caf50;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        font-size: 16px;
+        font-weight: bold;
+      }
+      .btn-save:hover {
+        background: #45a049;
+      }
+
+      /* フィルタ部分 */
+      .filter-section {
+        margin-top: 30px;
+        border-top: 2px solid #eee;
+        padding-top: 20px;
+      }
+      .filter-group {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .filter-btn {
+        border: 2px solid #ccc;
+        padding: 5px 12px;
+        border-radius: 20px;
+        cursor: pointer;
+        background: white;
+        font-size: 0.9em;
+      }
+      .filter-btn.active {
+        border-color: #333;
+        background: #333;
+        color: white;
+      }
+
+      /* リスト部分 */
+      .quiz-item {
+        background: #fafafa;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 8px solid #ccc;
+        position: relative;
+        border-radius: 4px;
+      }
+      .btn-delete {
+        background: #ff5252;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+        position: absolute;
+        right: 10px;
+        top: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>📝 問題を作る（親用）</h2>
+
+      <div class="form-group">
+        <label>色タグを選択</label>
+        <select id="category">
+          <option value="#2196F3" style="background: #2196f3; color: white">
+            青色
+          </option>
+          <option value="#F44336" style="background: #f44336; color: white">
+            赤色
+          </option>
+          <option value="#4CAF50" style="background: #4caf50; color: white">
+            緑色
+          </option>
+          <option value="#FFC107" style="background: #ffc107; color: black">
+            黄色
+          </option>
+          <option value="#9C27B0" style="background: #9c27b0; color: white">
+            紫色
+          </option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>問題文</label>
+        <input
+          type="text"
+          id="question"
+          placeholder="例：日本で一番高い山は？"
+        />
+      </div>
+      <div class="form-group">
+        <label>答え</label>
+        <input type="text" id="answer" placeholder="例：富士山" />
+      </div>
+      <div class="form-group">
+        <label>ヒント（先頭の一文字）</label>
+        <input type="text" id="hint" placeholder="例：ふ" />
+      </div>
+      <button class="btn-save" onclick="saveQuiz()">この内容で保存する</button>
+
+      <div class="filter-section">
+        <h3>作成済みの問題一覧</h3>
+        <div class="filter-group" id="filterGroup">
+          <span>表示：</span>
+          <button
+            class="filter-btn active"
+            onclick="filterQuizzes('all', this)"
+          >
+            すべて
+          </button>
+          <button
+            class="filter-btn"
+            onclick="filterQuizzes('#2196F3', this)"
+            style="color: #2196f3"
+          >
+            ●青
+          </button>
+          <button
+            class="filter-btn"
+            onclick="filterQuizzes('#F44336', this)"
+            style="color: #f44336"
+          >
+            ●赤
+          </button>
+          <button
+            class="filter-btn"
+            onclick="filterQuizzes('#4CAF50', this)"
+            style="color: #4caf50"
+          >
+            ●緑
+          </button>
+          <button
+            class="filter-btn"
+            onclick="filterQuizzes('#FFC107', this)"
+            style="color: #ffb300"
+          >
+            ●黄
+          </button>
+          <button
+            class="filter-btn"
+            onclick="filterQuizzes('#9C27B0', this)"
+            style="color: #9c27b0"
+          >
+            ●紫
+          </button>
+        </div>
+        <div id="quizDisplay"></div>
+      </div>
+    </div>
+
+    <script>
+      let currentFilter = "all";
+
+      window.onload = () => displayQuizzes();
+
+      function saveQuiz() {
+        const category = document.getElementById("category").value;
+        const question = document.getElementById("question").value;
+        const answer = document.getElementById("answer").value;
+        const hint = document.getElementById("hint").value;
+
+        if (!question || !answer) return alert("問題と答えを入力してね！");
+
+        const newQuiz = {
+          id: Date.now(),
+          category: category,
+          question: question,
+          answer: answer,
+          hint: hint,
+          score: 0,
+        };
+
+        let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
+        quizzes.push(newQuiz);
+        localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
+
+        // 入力クリア
+        document.getElementById("question").value = "";
+        document.getElementById("answer").value = "";
+        document.getElementById("hint").value = "";
+
+        displayQuizzes();
+      }
+
+      // フィルタリング機能
+      function filterQuizzes(color, btnElement) {
+        currentFilter = color;
+
+        // ボタンの見た目を切り替え
+        const buttons = document.querySelectorAll(".filter-btn");
+        buttons.forEach((btn) => btn.classList.remove("active"));
+        btnElement.classList.add("active");
+
+        displayQuizzes();
+      }
+
+      function displayQuizzes() {
+        const quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
+        const display = document.getElementById("quizDisplay");
+        display.innerHTML = "";
+
+        // フィルタ条件に合うものだけを抽出
+        const filtered = quizzes.filter((quiz) => {
+          return currentFilter === "all" || quiz.category === currentFilter;
+        });
+
+        if (filtered.length === 0) {
+          display.innerHTML =
+            "<p style='color:gray; font-size:0.9em;'>該当する問題はありません。</p>";
+          return;
+        }
+
+        filtered.forEach((quiz) => {
+          const div = document.createElement("div");
+          div.className = "quiz-item";
+          div.style.borderLeftColor = quiz.category;
+          div.innerHTML = `
+                <p style="margin:0; font-size:0.9em; color:${quiz.category};">● カテゴリ</p>
+                <p><strong>問：</strong>${quiz.question}</p>
+                <p><strong>答：</strong>${quiz.answer} <small>(ヒント：${quiz.hint})</small></p>
+                <button class="btn-delete" onclick="deleteQuiz(${quiz.id})">削除</button>
+            `;
+          display.appendChild(div);
+        });
+      }
+
+      function deleteQuiz(id) {
+        if (!confirm("この問題を消してもいいですか？")) return;
+        let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
+        quizzes = quizzes.filter((q) => q.id !== id);
+        localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
+        displayQuizzes();
+      }
+    </script>
+  </body>
+</html>
