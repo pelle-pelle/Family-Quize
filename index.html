@@ -272,202 +272,176 @@
       </div>
     </div>
 
-    <script>
-      let quizzes = [];
-      let currentQuizIndex = 0;
-      let sessionScore = 0;
-      let usedHint = false;
+<script>
+    let quizzes = [];
+    let currentQuizIndex = 0;
+    let sessionScore = 0;
+    let usedHint = false;
 
-      window.onload = () => {
+    window.onload = () => {
         loadData();
         displayQuizzes();
         updatePointDisplay();
-      };
+    };
 
-      function loadData() {
-        quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-      }
+    function loadData() {
+        quizzes = JSON.parse(localStorage.getItem('myQuizzes')) || [];
+    }
 
-      function updatePointDisplay() {
-        const total = localStorage.getItem("totalPoints") || 0;
-        document.getElementById("totalPoints").innerText = total;
-      }
+    function updatePointDisplay() {
+        const total = localStorage.getItem('totalPoints') || 0;
+        document.getElementById('totalPoints').innerText = total;
+    }
 
-      // --- モード切り替え ---
-      function switchMode(mode) {
-        if (mode === "parent") {
-          document.getElementById("parentMode").classList.remove("hidden");
-          document.getElementById("childMode").classList.add("hidden");
-          document.getElementById("btnParent").classList.add("active");
-          document.getElementById("btnChild").classList.remove("active");
-          displayQuizzes();
+    // --- モード切り替え ---
+    function switchMode(mode) {
+        if(mode === 'parent') {
+            document.getElementById('parentMode').classList.remove('hidden');
+            document.getElementById('childMode').classList.add('hidden');
+            document.getElementById('btnParent').classList.add('active');
+            document.getElementById('btnChild').classList.remove('active');
+            displayQuizzes();
         } else {
-          if (quizzes.length === 0)
-            return alert("まずは親モードで問題を作ってね！");
-          document.getElementById("parentMode").classList.add("hidden");
-          document.getElementById("childMode").classList.remove("hidden");
-          document.getElementById("btnParent").classList.remove("active");
-          document.getElementById("btnChild").classList.add("active");
-          startQuiz();
+            if(quizzes.length === 0) return alert("まずは親モードで問題を作ってね！");
+            document.getElementById('parentMode').classList.add('hidden');
+            document.getElementById('childMode').classList.remove('hidden');
+            document.getElementById('btnParent').classList.remove('active');
+            document.getElementById('btnChild').classList.add('active');
+            startQuiz();
         }
-      }
+    }
 
-      // --- 親モード：保存 ---
-      function saveQuiz() {
-        const q = document.getElementById("question").value;
-        const a = document.getElementById("answer").value;
-        const h = document.getElementById("hint").value;
-        const c = document.getElementById("category").value;
+    // --- 親モード：保存 ---
+    function saveQuiz() {
+        const q = document.getElementById('question').value;
+        const a = document.getElementById('answer').value;
+        const h = document.getElementById('hint').value;
+        const c = document.getElementById('category').value;
 
-        if (!q || !a) return alert("問題と答えを入れてね");
+        if(!q || !a) return alert("問題と答えを入れてね");
 
-        quizzes.push({
-          id: Date.now(),
-          question: q,
-          answer: a,
-          hint: h,
-          category: c,
-          score: 0,
-        });
-        localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
-
-        document.getElementById("question").value = "";
-        document.getElementById("answer").value = "";
-        document.getElementById("hint").value = "";
+        quizzes.push({ id: Date.now(), question: q, answer: a, hint: h, category: c, score: 0 });
+        localStorage.setItem('myQuizzes', JSON.stringify(quizzes));
+        
+        document.getElementById('question').value = "";
+        document.getElementById('answer').value = "";
+        document.getElementById('hint').value = "";
         displayQuizzes();
-      }
+    }
 
-      function displayQuizzes() {
-        const list = document.getElementById("quizList");
+    function displayQuizzes() {
+        const list = document.getElementById('quizList');
         list.innerHTML = "<h3>作った問題</h3>";
-        quizzes.forEach((item) => {
-          const div = document.createElement("div");
-          div.className = "quiz-item";
-          div.style.borderLeftColor = item.category;
-          div.innerHTML = `<strong>${item.question}</strong><br><small>答: ${item.answer}</small>`;
-          list.appendChild(div);
+        quizzes.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'quiz-item';
+            div.style.borderLeftColor = item.category;
+            div.innerHTML = `<strong>${item.question}</strong><br><small>答: ${item.answer}</small>`;
+            list.appendChild(div);
         });
-      }
+    }
 
-      // --- 子供モード：クイズ開始 ---
-      function startQuiz() {
+    // --- 子供モード：クイズ開始 ---
+    function startQuiz() {
         currentQuizIndex = 0;
         sessionScore = 0;
-        document.getElementById("quizArea").classList.remove("hidden");
-        document.getElementById("resultArea").classList.add("hidden");
-        // 問題をシャッフル（お好みで）
+        document.getElementById('quizArea').classList.remove('hidden');
+        document.getElementById('resultArea').classList.add('hidden');
         quizzes.sort(() => Math.random() - 0.5);
         showQuestion();
-      }
+    }
 
-      function showQuestion() {
+    function showQuestion() {
         const q = quizzes[currentQuizIndex];
         usedHint = false;
-        document.getElementById("displayQuestion").innerText = q.question;
-        document.getElementById("displayHint").innerText = "";
-        document.getElementById("childAnswer").value = "";
-        document.getElementById("childCard").style.borderColor = q.category;
-        document.getElementById("qCategory").innerText = "この問題の色タグ：●";
-        document.getElementById("qCategory").style.color = q.category;
-        document.getElementById("progress").innerText =
-          `${currentQuizIndex + 1} / ${quizzes.length} 問目`;
-        document.getElementById("hintBtn").classList.remove("hidden");
-      }
+        document.getElementById('displayQuestion').innerText = q.question;
+        document.getElementById('displayHint').innerText = "";
+        document.getElementById('childAnswer').value = "";
+        document.getElementById('childCard').style.borderColor = q.category;
+        document.getElementById('qCategory').innerText = "この問題の色タグ：●";
+        document.getElementById('qCategory').style.color = q.category;
+        document.getElementById('progress').innerText = `${currentQuizIndex + 1} / ${quizzes.length} 問目`;
+        document.getElementById('hintBtn').classList.remove('hidden');
+    }
 
-      function showHint() {
+    function showHint() {
         const q = quizzes[currentQuizIndex];
-        document.getElementById("displayHint").innerText =
-          `ヒント：さいしょの文字は 「${q.hint}」 だよ！`;
+        document.getElementById('displayHint').innerText = `ヒント：さいしょの文字は 「${q.hint}」 だよ！`;
         usedHint = true;
-        document.getElementById("hintBtn").classList.add("hidden");
-      }
+        document.getElementById('hintBtn').classList.add('hidden');
+    }
 
-      function checkAnswer() {
-        const userAnswer = document.getElementById("childAnswer").value.trim();
+    function checkAnswer() {
+        const userAnswer = document.getElementById('childAnswer').value.trim();
         const correctAnswer = quizzes[currentQuizIndex].answer.trim();
 
-        if (userAnswer === correctAnswer) {
-          // ポイント計算
-          const points = usedHint ? 3 : 10;
-          sessionScore += points;
-          alert(`正解！ +${points}pt ゲット！`);
-
-          currentQuizIndex++;
-          if (currentQuizIndex < quizzes.length) {
-            showQuestion();
-          } else {
-            finishQuiz();
-          }
+        if(userAnswer === correctAnswer) {
+            const points = usedHint ? 3 : 10;
+            sessionScore += points;
+            alert(`正解！ +${points}pt ゲット！`);
+            
+            currentQuizIndex++;
+            if(currentQuizIndex < quizzes.length) {
+                showQuestion();
+            } else {
+                finishQuiz();
+            }
         } else {
-          alert("ざんねん！ちがうよ。もういちど考えてみて！");
+            alert("ざんねん！ちがうよ。もういちど考えてみて！");
         }
-      }
+    }
 
-      function finishQuiz() {
-        document.getElementById("quizArea").classList.add("hidden");
-        document.getElementById("resultArea").classList.remove("hidden");
-        document.getElementById("sessionScore").innerText = sessionScore;
+    function finishQuiz() {
+        document.getElementById('quizArea').classList.add('hidden');
+        document.getElementById('resultArea').classList.remove('hidden');
+        document.getElementById('sessionScore').innerText = sessionScore;
 
-        // 累計ポイント更新
-        let total = parseInt(localStorage.getItem("totalPoints") || 0);
+        let total = parseInt(localStorage.getItem('totalPoints') || 0);
         total += sessionScore;
-        localStorage.setItem("totalPoints", total);
+        localStorage.setItem('totalPoints', total);
         updatePointDisplay();
 
-        // 親からのメッセージ（簡易版）
         let msg = "よくがんばったね！";
-        if (sessionScore >= quizzes.length * 8)
-          msg = "しんじられない！てんさいだ！";
-        document.getElementById("parentMessage").innerText = msg;
-        }
+        if(sessionScore >= quizzes.length * 8) msg = "しんじられない！てんさいだ！";
+        document.getElementById('parentMessage').innerText = msg;
+    } // ← ここで finishQuiz をしっかり閉じます！
 
-        // --- データの書き出し (Export) ---
-        function exportJSON() {
-          if (quizzes.length === 0) return alert("書き出す問題がありません。");
+    // --- データの書き出し (独立した関数) ---
+    function exportJSON() {
+        if (quizzes.length === 0) return alert("書き出す問題がありません。");
+        const dataStr = JSON.stringify(quizzes, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "quiz_data.json";
+        a.click();
+        URL.revokeObjectURL(url);
+    }
 
-          // 保存するデータを作成（問題リスト）
-          const dataStr = JSON.stringify(quizzes, null, 2);
-          const blob = new Blob([dataStr], { type: "application/json" });
-          const url = URL.createObjectURL(blob);
-
-          // 一時的なダウンロードリンクを作ってクリックさせる
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = "quiz_data.json"; // ファイル名
-          a.click();
-
-          URL.revokeObjectURL(url); // メモリ解放
-        }
-
-        // --- データの読み込み (Import) ---
-        function importJSON(event) {
-          const file = event.target.files[0];
-          if (!file) return;
-
-          const reader = new FileReader();
-          reader.onload = function (e) {
+    // --- データの読み込み (独立した関数) ---
+    function importJSON(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
             try {
-              const importedData = JSON.parse(e.target.result);
-
-              if (Array.isArray(importedData)) {
-                // 既存のデータに合体させる
-                quizzes = quizzes.concat(importedData);
-
-                // 重複を防ぎたい場合は ID でフィルタリングするなどの処理が必要ですが、
-                // まずはシンプルに「追加」という形にします。
-
-                localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
-                displayQuizzes();
-                alert(importedData.length + " 問の問題を読み込みました！");
-              } else {
-                alert("ファイルの中身が正しい形式ではありません。");
-              }
+                const importedData = JSON.parse(e.target.result);
+                if (Array.isArray(importedData)) {
+                    quizzes = quizzes.concat(importedData);
+                    localStorage.setItem('myQuizzes', JSON.stringify(quizzes));
+                    displayQuizzes();
+                    alert(importedData.length + " 問の問題を読み込みました！");
+                } else {
+                    alert("形式が正しくありません。");
+                }
             } catch (err) {
-              alert("ファイルの読み込みに失敗しました。");
+                alert("読み込みに失敗しました。");
             }
-          };
-          reader.readAsText(file);
-        }
-    </script>
+        };
+        reader.readAsText(file);
+    }
+</script>
+
   </body>
 </html>
