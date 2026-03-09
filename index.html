@@ -2,10 +2,10 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <title>クイズ管理画面</title>
+    <title>親子で学習！クイズアプリ</title>
     <style>
       body {
-        font-family: sans-serif;
+        font-family: "Helvetica Neue", Arial, sans-serif;
         padding: 20px;
         background: #f0f4f8;
         color: #333;
@@ -14,9 +14,38 @@
         max-width: 600px;
         margin: 0 auto;
         background: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      /* モード切り替えボタン */
+      .mode-switcher {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .mode-btn {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        background: #ddd;
+      }
+      .mode-btn.active {
+        background: #2196f3;
+        color: white;
+      }
+
+      /* 共通設定 */
+      .hidden {
+        display: none;
+      }
+      h2 {
+        border-bottom: 2px solid #eee;
+        padding-bottom: 10px;
       }
       .form-group {
         margin-bottom: 15px;
@@ -26,16 +55,73 @@
         margin-bottom: 5px;
         font-weight: bold;
       }
-      input,
-      select {
+      input {
         width: 100%;
-        padding: 10px;
+        padding: 12px;
         box-sizing: border-box;
-        border: 1px solid #ccc;
-        border-radius: 5px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 16px;
       }
 
-      /* 保存ボタン */
+      /* 子供モードのスタイル */
+      .child-card {
+        text-align: center;
+        padding: 20px;
+        border-radius: 15px;
+        border: 4px solid #eee;
+        margin-top: 20px;
+      }
+      .question-text {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+      .hint-text {
+        color: #f44336;
+        font-weight: bold;
+        margin: 10px 0;
+        min-height: 1.2em;
+      }
+      .btn-action {
+        width: 100%;
+        padding: 15px;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 10px;
+      }
+      .btn-check {
+        background: #ff9800;
+        color: white;
+      }
+      .btn-hint {
+        background: #eee;
+        color: #666;
+        font-size: 14px;
+      }
+
+      /* 成績・累計 */
+      .score-board {
+        background: #e3f2fd;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      /* 親モード用（前回分） */
+      .quiz-item {
+        background: #fafafa;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 8px solid #ccc;
+        position: relative;
+        border-radius: 4px;
+      }
       .btn-save {
         background: #4caf50;
         color: white;
@@ -45,235 +131,342 @@
         cursor: pointer;
         width: 100%;
         font-size: 16px;
-        font-weight: bold;
-      }
-      .btn-save:hover {
-        background: #45a049;
-      }
-
-      /* フィルタ部分 */
-      .filter-section {
-        margin-top: 30px;
-        border-top: 2px solid #eee;
-        padding-top: 20px;
-      }
-      .filter-group {
-        display: flex;
-        gap: 5px;
-        margin-bottom: 15px;
-        flex-wrap: wrap;
-        align-items: center;
-      }
-      .filter-btn {
-        border: 2px solid #ccc;
-        padding: 5px 12px;
-        border-radius: 20px;
-        cursor: pointer;
-        background: white;
-        font-size: 0.9em;
-      }
-      .filter-btn.active {
-        border-color: #333;
-        background: #333;
-        color: white;
-      }
-
-      /* リスト部分 */
-      .quiz-item {
-        background: #fafafa;
-        padding: 15px;
-        margin-bottom: 10px;
-        border-left: 8px solid #ccc;
-        position: relative;
-        border-radius: 4px;
-      }
-      .btn-delete {
-        background: #ff5252;
-        color: white;
-        border: none;
-        padding: 5px 10px;
-        border-radius: 3px;
-        cursor: pointer;
-        position: absolute;
-        right: 10px;
-        top: 15px;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h2>📝 問題を作る（親用）</h2>
+      <div class="mode-switcher">
+        <button
+          id="btnParent"
+          class="mode-btn active"
+          onclick="switchMode('parent')"
+        >
+          親モード (作る)
+        </button>
+        <button id="btnChild" class="mode-btn" onclick="switchMode('child')">
+          子供モード (解く)
+        </button>
+      </div>
 
-      <div class="form-group">
-        <label>色タグを選択</label>
-        <select id="category">
-          <option value="#2196F3" style="background: #2196f3; color: white">
-            青色
-          </option>
-          <option value="#F44336" style="background: #f44336; color: white">
-            赤色
-          </option>
-          <option value="#4CAF50" style="background: #4caf50; color: white">
-            緑色
-          </option>
-          <option value="#FFC107" style="background: #ffc107; color: black">
-            黄色
-          </option>
-          <option value="#9C27B0" style="background: #9c27b0; color: white">
-            紫色
-          </option>
-        </select>
+      <div class="score-board">
+        <span>累計ポイント: <strong id="totalPoints">0</strong> pt</span>
       </div>
-      <div class="form-group">
-        <label>問題文</label>
-        <input
-          type="text"
-          id="question"
-          placeholder="例：日本で一番高い山は？"
-        />
-      </div>
-      <div class="form-group">
-        <label>答え</label>
-        <input type="text" id="answer" placeholder="例：富士山" />
-      </div>
-      <div class="form-group">
-        <label>ヒント（先頭の一文字）</label>
-        <input type="text" id="hint" placeholder="例：ふ" />
-      </div>
-      <button class="btn-save" onclick="saveQuiz()">この内容で保存する</button>
 
-      <div class="filter-section">
-        <h3>作成済みの問題一覧</h3>
-        <div class="filter-group" id="filterGroup">
-          <span>表示：</span>
+      <div id="parentMode">
+        <h2>📝 問題を作る</h2>
+        <div class="form-group">
+          <label>色タグ</label>
+          <select id="category" style="width: 100%; padding: 10px">
+            <option value="#2196F3">青色</option>
+            <option value="#F44336">赤色</option>
+            <option value="#4CAF50">緑色</option>
+            <option value="#FFC107">黄色</option>
+            <option value="#9C27B0">紫色</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>問題文</label>
+          <input type="text" id="question" placeholder="例：8 × 7 は？" />
+        </div>
+        <div class="form-group">
+          <label>答え</label>
+          <input type="text" id="answer" placeholder="例：56" />
+        </div>
+        <div class="form-group">
+          <label>ヒント（最初の一文字）</label>
+          <input type="text" id="hint" placeholder="例：ご" />
+        </div>
+        <button class="btn-save" onclick="saveQuiz()">保存する</button>
+        <div id="quizList" style="margin-top: 20px"></div>
+      </div>
+
+      <div
+        style="
+          margin-top: 20px;
+          padding: 15px;
+          background: #fff3e0;
+          border-radius: 8px;
+        "
+      >
+        <p style="margin-top: 0; font-weight: bold">データの共有</p>
+        <div style="display: flex; gap: 10px">
           <button
-            class="filter-btn active"
-            onclick="filterQuizzes('all', this)"
+            onclick="exportJSON()"
+            style="flex: 1; padding: 10px; cursor: pointer"
           >
-            すべて
+            📤 ファイルに書き出す
           </button>
-          <button
-            class="filter-btn"
-            onclick="filterQuizzes('#2196F3', this)"
-            style="color: #2196f3"
+
+          <label
+            style="
+              flex: 1;
+              padding: 10px;
+              background: #eee;
+              text-align: center;
+              cursor: pointer;
+              border-radius: 2px;
+              border: 1px solid #ccc;
+              font-size: 13px;
+            "
           >
-            ●青
-          </button>
-          <button
-            class="filter-btn"
-            onclick="filterQuizzes('#F44336', this)"
-            style="color: #f44336"
-          >
-            ●赤
-          </button>
-          <button
-            class="filter-btn"
-            onclick="filterQuizzes('#4CAF50', this)"
-            style="color: #4caf50"
-          >
-            ●緑
-          </button>
-          <button
-            class="filter-btn"
-            onclick="filterQuizzes('#FFC107', this)"
-            style="color: #ffb300"
-          >
-            ●黄
-          </button>
-          <button
-            class="filter-btn"
-            onclick="filterQuizzes('#9C27B0', this)"
-            style="color: #9c27b0"
-          >
-            ●紫
+            📥 ファイルから読み込む
+            <input
+              type="file"
+              id="importFile"
+              accept=".json"
+              onchange="importJSON(event)"
+              style="display: none"
+            />
+          </label>
+        </div>
+        <p style="font-size: 11px; color: #666; margin-bottom: 0">
+          ※読み込むと、今ある問題に新しく追加されます。
+        </p>
+      </div>
+
+      <div id="childMode" class="hidden">
+        <h2>🚀 クイズにちょうせん！</h2>
+        <div id="quizArea">
+          <div id="childCard" class="child-card">
+            <div
+              id="qCategory"
+              style="margin-bottom: 10px; font-weight: bold"
+            ></div>
+            <div class="question-text" id="displayQuestion">
+              問題が読み込めないよ
+            </div>
+            <input
+              type="text"
+              id="childAnswer"
+              placeholder="こたえを入力してね"
+            />
+            <div id="displayHint" class="hint-text"></div>
+
+            <button class="btn-action btn-check" onclick="checkAnswer()">
+              こたえあわせ！
+            </button>
+            <button
+              class="btn-action btn-hint"
+              id="hintBtn"
+              onclick="showHint()"
+            >
+              ヒントをみる (もらえるポイントがへるよ)
+            </button>
+          </div>
+          <p id="progress" style="text-align: center; color: #666"></p>
+        </div>
+        <div id="resultArea" class="hidden" style="text-align: center">
+          <h3>おつかれさま！</h3>
+          <p style="font-size: 20px">
+            今回のポイント: <span id="sessionScore">0</span> pt
+          </p>
+          <p
+            id="parentMessage"
+            style="font-weight: bold; color: #2196f3; font-size: 24px"
+          ></p>
+          <button class="btn-action btn-check" onclick="switchMode('child')">
+            もういちど遊ぶ
           </button>
         </div>
-        <div id="quizDisplay"></div>
       </div>
     </div>
 
     <script>
-      let currentFilter = "all";
+      let quizzes = [];
+      let currentQuizIndex = 0;
+      let sessionScore = 0;
+      let usedHint = false;
 
-      window.onload = () => displayQuizzes();
+      window.onload = () => {
+        loadData();
+        displayQuizzes();
+        updatePointDisplay();
+      };
 
+      function loadData() {
+        quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
+      }
+
+      function updatePointDisplay() {
+        const total = localStorage.getItem("totalPoints") || 0;
+        document.getElementById("totalPoints").innerText = total;
+      }
+
+      // --- モード切り替え ---
+      function switchMode(mode) {
+        if (mode === "parent") {
+          document.getElementById("parentMode").classList.remove("hidden");
+          document.getElementById("childMode").classList.add("hidden");
+          document.getElementById("btnParent").classList.add("active");
+          document.getElementById("btnChild").classList.remove("active");
+          displayQuizzes();
+        } else {
+          if (quizzes.length === 0)
+            return alert("まずは親モードで問題を作ってね！");
+          document.getElementById("parentMode").classList.add("hidden");
+          document.getElementById("childMode").classList.remove("hidden");
+          document.getElementById("btnParent").classList.remove("active");
+          document.getElementById("btnChild").classList.add("active");
+          startQuiz();
+        }
+      }
+
+      // --- 親モード：保存 ---
       function saveQuiz() {
-        const category = document.getElementById("category").value;
-        const question = document.getElementById("question").value;
-        const answer = document.getElementById("answer").value;
-        const hint = document.getElementById("hint").value;
+        const q = document.getElementById("question").value;
+        const a = document.getElementById("answer").value;
+        const h = document.getElementById("hint").value;
+        const c = document.getElementById("category").value;
 
-        if (!question || !answer) return alert("問題と答えを入力してね！");
+        if (!q || !a) return alert("問題と答えを入れてね");
 
-        const newQuiz = {
+        quizzes.push({
           id: Date.now(),
-          category: category,
-          question: question,
-          answer: answer,
-          hint: hint,
+          question: q,
+          answer: a,
+          hint: h,
+          category: c,
           score: 0,
-        };
-
-        let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-        quizzes.push(newQuiz);
+        });
         localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
 
-        // 入力クリア
         document.getElementById("question").value = "";
         document.getElementById("answer").value = "";
         document.getElementById("hint").value = "";
-
-        displayQuizzes();
-      }
-
-      // フィルタリング機能
-      function filterQuizzes(color, btnElement) {
-        currentFilter = color;
-
-        // ボタンの見た目を切り替え
-        const buttons = document.querySelectorAll(".filter-btn");
-        buttons.forEach((btn) => btn.classList.remove("active"));
-        btnElement.classList.add("active");
-
         displayQuizzes();
       }
 
       function displayQuizzes() {
-        const quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-        const display = document.getElementById("quizDisplay");
-        display.innerHTML = "";
-
-        // フィルタ条件に合うものだけを抽出
-        const filtered = quizzes.filter((quiz) => {
-          return currentFilter === "all" || quiz.category === currentFilter;
-        });
-
-        if (filtered.length === 0) {
-          display.innerHTML =
-            "<p style='color:gray; font-size:0.9em;'>該当する問題はありません。</p>";
-          return;
-        }
-
-        filtered.forEach((quiz) => {
+        const list = document.getElementById("quizList");
+        list.innerHTML = "<h3>作った問題</h3>";
+        quizzes.forEach((item) => {
           const div = document.createElement("div");
           div.className = "quiz-item";
-          div.style.borderLeftColor = quiz.category;
-          div.innerHTML = `
-                <p style="margin:0; font-size:0.9em; color:${quiz.category};">● カテゴリ</p>
-                <p><strong>問：</strong>${quiz.question}</p>
-                <p><strong>答：</strong>${quiz.answer} <small>(ヒント：${quiz.hint})</small></p>
-                <button class="btn-delete" onclick="deleteQuiz(${quiz.id})">削除</button>
-            `;
-          display.appendChild(div);
+          div.style.borderLeftColor = item.category;
+          div.innerHTML = `<strong>${item.question}</strong><br><small>答: ${item.answer}</small>`;
+          list.appendChild(div);
         });
       }
 
-      function deleteQuiz(id) {
-        if (!confirm("この問題を消してもいいですか？")) return;
-        let quizzes = JSON.parse(localStorage.getItem("myQuizzes")) || [];
-        quizzes = quizzes.filter((q) => q.id !== id);
-        localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
-        displayQuizzes();
+      // --- 子供モード：クイズ開始 ---
+      function startQuiz() {
+        currentQuizIndex = 0;
+        sessionScore = 0;
+        document.getElementById("quizArea").classList.remove("hidden");
+        document.getElementById("resultArea").classList.add("hidden");
+        // 問題をシャッフル（お好みで）
+        quizzes.sort(() => Math.random() - 0.5);
+        showQuestion();
+      }
+
+      function showQuestion() {
+        const q = quizzes[currentQuizIndex];
+        usedHint = false;
+        document.getElementById("displayQuestion").innerText = q.question;
+        document.getElementById("displayHint").innerText = "";
+        document.getElementById("childAnswer").value = "";
+        document.getElementById("childCard").style.borderColor = q.category;
+        document.getElementById("qCategory").innerText = "この問題の色タグ：●";
+        document.getElementById("qCategory").style.color = q.category;
+        document.getElementById("progress").innerText =
+          `${currentQuizIndex + 1} / ${quizzes.length} 問目`;
+        document.getElementById("hintBtn").classList.remove("hidden");
+      }
+
+      function showHint() {
+        const q = quizzes[currentQuizIndex];
+        document.getElementById("displayHint").innerText =
+          `ヒント：さいしょの文字は 「${q.hint}」 だよ！`;
+        usedHint = true;
+        document.getElementById("hintBtn").classList.add("hidden");
+      }
+
+      function checkAnswer() {
+        const userAnswer = document.getElementById("childAnswer").value.trim();
+        const correctAnswer = quizzes[currentQuizIndex].answer.trim();
+
+        if (userAnswer === correctAnswer) {
+          // ポイント計算
+          const points = usedHint ? 3 : 10;
+          sessionScore += points;
+          alert(`正解！ +${points}pt ゲット！`);
+
+          currentQuizIndex++;
+          if (currentQuizIndex < quizzes.length) {
+            showQuestion();
+          } else {
+            finishQuiz();
+          }
+        } else {
+          alert("ざんねん！ちがうよ。もういちど考えてみて！");
+        }
+      }
+
+      function finishQuiz() {
+        document.getElementById("quizArea").classList.add("hidden");
+        document.getElementById("resultArea").classList.remove("hidden");
+        document.getElementById("sessionScore").innerText = sessionScore;
+
+        // 累計ポイント更新
+        let total = parseInt(localStorage.getItem("totalPoints") || 0);
+        total += sessionScore;
+        localStorage.setItem("totalPoints", total);
+        updatePointDisplay();
+
+        // 親からのメッセージ（簡易版）
+        let msg = "よくがんばったね！";
+        if (sessionScore >= quizzes.length * 8)
+          msg = "しんじられない！てんさいだ！";
+        document.getElementById("parentMessage").innerText = msg;
+
+        // --- データの書き出し (Export) ---
+        function exportJSON() {
+          if (quizzes.length === 0) return alert("書き出す問題がありません。");
+
+          // 保存するデータを作成（問題リスト）
+          const dataStr = JSON.stringify(quizzes, null, 2);
+          const blob = new Blob([dataStr], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+
+          // 一時的なダウンロードリンクを作ってクリックさせる
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "quiz_data.json"; // ファイル名
+          a.click();
+
+          URL.revokeObjectURL(url); // メモリ解放
+        }
+
+        // --- データの読み込み (Import) ---
+        function importJSON(event) {
+          const file = event.target.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            try {
+              const importedData = JSON.parse(e.target.result);
+
+              if (Array.isArray(importedData)) {
+                // 既存のデータに合体させる
+                quizzes = quizzes.concat(importedData);
+
+                // 重複を防ぎたい場合は ID でフィルタリングするなどの処理が必要ですが、
+                // まずはシンプルに「追加」という形にします。
+
+                localStorage.setItem("myQuizzes", JSON.stringify(quizzes));
+                displayQuizzes();
+                alert(importedData.length + " 問の問題を読み込みました！");
+              } else {
+                alert("ファイルの中身が正しい形式ではありません。");
+              }
+            } catch (err) {
+              alert("ファイルの読み込みに失敗しました。");
+            }
+          };
+          reader.readAsText(file);
+        }
       }
     </script>
   </body>
