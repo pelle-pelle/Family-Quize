@@ -419,6 +419,7 @@
         if (sessionScore >= quizzes.length * 8)
           msg = "しんじられない！てんさいだ！";
         document.getElementById("parentMessage").innerText = msg;
+        }
 
         // --- データの書き出し (Export) ---
         function exportJSON() {
@@ -467,7 +468,6 @@
           };
           reader.readAsText(file);
         }
-      }
     </script>
   </body>
 </html>
